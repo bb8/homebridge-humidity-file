@@ -13,14 +13,21 @@ function HumidityFileAccessory(log, config) {
   this.log = log;
   this.name = config["name"];
   this.filePath = config["file_path"];
+  this.data = null;
 
   var service = new Service.HumiditySensor(this.name);
 
   var changeAction = function(data) {
+    if (data == this.data || data === null)
+      return;
+
+    log.info("Humidity changed: "+this.data+" -> "+data);
     service
       .getCharacteristic(Characteristic.CurrentRelativeHumidity)
       .setValue(data);
-  }
+
+    this.data = data;
+  }.bind(this);
 
   var changeHandler = function(path, stats) {
     fs.readFile(this.filePath, 'utf8', function(err, data) {
